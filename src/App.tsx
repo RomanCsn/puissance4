@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -21,6 +22,9 @@ function App() {
         <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
+        <p style={{ marginTop: '1rem' }}>
+          <Link to="/history">Voir l'historique</Link>
+        </p>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
