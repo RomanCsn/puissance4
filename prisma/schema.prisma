@@ -1,15 +1,55 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum MatchResult {
+  P1_WIN
+  P2_WIN
+  DRAW
+}
+
+model Player {
+  id        String  @id @default(cuid())
+  pseudo    String  @unique
+  createdAt DateTime @default(now())
+
+  matchesAsP1 Match[] @relation("MatchPlayer1")
+  matchesAsP2 Match[] @relation("MatchPlayer2")
+  wins        Match[] @relation("MatchWinner")
+}
+
+model Match {
+  id         String     @id @default(cuid())
+
+  player1Id  String
+  player1    Player     @relation("MatchPlayer1", fields: [player1Id], references: [id])
+
+  player2Id  String
+  player2    Player     @relation("MatchPlayer2", fields: [player2Id], references: [id])
+
+  winnerId   String?
+  winner     Player?    @relation("MatchWinner", fields: [winnerId], references: [id])
+
+  result     MatchResult?
+  movesCount Int        @default(0)
+  durationMs Int        @default(0)
+
+  startedAt  DateTime   @default(now())
+  endedAt    DateTime?
+
+  createdAt  DateTime   @default(now())
+
+  @@index([endedAt])
+  @@index([startedAt])
+  @@index([player1Id])
+  @@index([player2Id])
+  @@index([winnerId])
 }
