@@ -17,7 +17,7 @@ docker compose up -d
 ```
 
 ## Variables d'environnement
-Le fichier [.env](http://_vscodecontentref_/1) contient :
+Le fichier [.env] contient :
 - `DATABASE_URL="postgresql://puissance4:puissance4@localhost:5432/puissance4?schema=public"`
 
 ## Prisma (génération + migrations)

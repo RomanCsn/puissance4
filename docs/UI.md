@@ -16,7 +16,7 @@
   - Optionnel : [endedAt](http://_vscodecontentref_/36) ISO si vous préférez (sinon le backend met [new Date()](http://_vscodecontentref_/37))
 
 4) Écran Historique :
-- appeler `GET /games` et afficher tel quel (format prof)
+- appeler `GET /games` et afficher tel quel
 
 ## Exemple fetch (TypeScript / React)
 ### Créer un match
