@@ -22,3 +22,13 @@ Ce projet utilise les outils suivants pour maintenir la qualité du code :
 - ESLint pour le linting
 - TypeScript pour la vérification de types
 - Vite pour un développement rapide avec HMR
+
+
+PAGE CONNEXION
+-connecter joueur 1
+-connecter joueur 2
+-Commencer
+-Distribuer les colleurs
+
+PAGE GAME
+-

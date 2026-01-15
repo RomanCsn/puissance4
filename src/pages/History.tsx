@@ -14,7 +14,7 @@ export default function History() {
             <div style={{position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 {/* Bouton fixe en haut à droite */}
                 <a
-                    href="/"
+                    href="/game/"
                     aria-label="Nouvelle partie"
                     style={{
                         position: 'fixed',
