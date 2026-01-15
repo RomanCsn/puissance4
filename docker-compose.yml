@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: puissance4_db
+    environment:
+      POSTGRES_USER: puissance4
+      POSTGRES_PASSWORD: puissance4
+      POSTGRES_DB: puissance4
+    ports:
+      - "5432:5432"
+    volumes:
+      - puissance4_db_data:/var/lib/postgresql/data
+
+volumes:
+  puissance4_db_data:
