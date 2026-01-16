@@ -1,148 +1,72 @@
 import { useState } from 'react'
-import './App.css'
+import { Link, useNavigate } from 'react-router-dom'
 
 function App() {
-  const ROWS = 6 
-  const COLS = 7
+  const navigate = useNavigate()
 
-  type Player = null | 'R' | 'Y' 
+  const [player1Pseudo, setPlayer1Pseudo] = useState('')
+  const [player2Pseudo, setPlayer2Pseudo] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
+  const onStart = () => {
+    const p1 = player1Pseudo.trim()
+    const p2 = player2Pseudo.trim()
 
-  const [board, setBoard] = useState<(Player)[]>(
-    Array(ROWS * COLS).fill(null)
-  )
-  const [currentPlayer, setCurrentPlayer] = useState<Player>('R')
-  const [winner, setWinner] = useState<Player | null>(null)
-
-  
-  const getCell = (row: number, col: number): Player => {
-    return board[row * COLS + col]
-  }
-
-  
-  const setCell = (row: number, col: number, player: Player) => {
-    const newBoard = [...board]
-    newBoard[row * COLS + col] = player
-    setBoard(newBoard)
-  }
-
-  const getAvailableRow = (col: number): number | null => {
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (getCell(row, col) === null) {
-        return row
-      }
+    if (!p1 || !p2) {
+      setError('Veuillez entrer 2 pseudos.')
+      return
     }
-    return null
-  }
-
-  const playMove = (col: number) => {
-    if (winner) return
-
-    const row = getAvailableRow(col)
-    if (row === null) return
-
-    setCell(row, col, currentPlayer)
-
-    if (checkWinner(row, col, currentPlayer)) {
-      setWinner(currentPlayer)
-    } else {
-      setCurrentPlayer(currentPlayer === 'R' ? 'Y' : 'R')
+    if (p1 === p2) {
+      setError('Les pseudos doivent être différents.')
+      return
     }
-  }
 
-   
-
-
-  const checkWinner = (row: number, col: number, player: Player): boolean => {
-    // Vérifier horizontal
-    let count = 1
-    for (let i = 1; i < 4; i++) {
-      if (col - i >= 0 && getCell(row, col - i) === player) count++
-      else break
-    }
-    for (let i = 1; i < 4; i++) {
-      if (col + i < COLS && getCell(row, col + i) === player) count++
-      else break
-    }
-    if (count >= 4) return true
-
-    // Vérifier vertical
-    count = 1
-    for (let i = 1; i < 4; i++) {
-      if (row + i < ROWS && getCell(row + i, col) === player) count++
-      else break
-    }
-    for (let i = 1; i < 4; i++) {
-      if (row - i >= 0 && getCell(row - i, col) === player) count++
-      else break
-    }
-    if (count >= 4) return true
-
-    // Vérifier diagonal (haut-gauche à bas-droite)
-    count = 1
-    for (let i = 1; i < 4; i++) {
-      if (row - i >= 0 && col - i >= 0 && getCell(row - i, col - i) === player) count++
-      else break
-    }
-    for (let i = 1; i < 4; i++) {
-      if (row + i < ROWS && col + i < COLS && getCell(row + i, col + i) === player) count++
-      else break
-    }
-    if (count >= 4) return true
-
-    // Vérifier diagonal (bas-gauche à haut-droite)
-    count = 1
-    for (let i = 1; i < 4; i++) {
-      if (row + i < ROWS && col - i >= 0 && getCell(row + i, col - i) === player) count++
-      else break
-    }
-    for (let i = 1; i < 4; i++) {
-      if (row - i >= 0 && col + i < COLS && getCell(row - i, col + i) === player) count++
-      else break
-    }
-    if (count >= 4) return true
-
-    return false
-  }
-
-  const resetGame = () => {
-    setBoard(Array(ROWS * COLS).fill(null))
-    setCurrentPlayer('R')
-    setWinner(null)
-  }
-
-  const getCellColor = (row: number, col: number): string => {
-    const player = getCell(row, col)
-    if (player === 'R') return 'red'
-    if (player === 'Y') return 'yellow'
-    return 'white'
+    setError(null)
+    const params = new URLSearchParams({ p1, p2 })
+    navigate(`/game?${params.toString()}`)
   }
 
   return (
-    <div className="game-container">
-      <h1>Puissance 4</h1>
-      <div className="game-info">
-        {winner ? (
-          <p>Joueur {winner} a gagné!</p>
-        ) : (
-          <p>Tour du joueur: {currentPlayer}</p>
-        )}
-      </div>
-      <div className="board">
-        {Array.from({ length: ROWS }).map((_, row) => (
-          <div key={row} className="board-row">
-            {Array.from({ length: COLS }).map((_, col) => (
-              <button
-                key={`${row}-${col}`}
-                className="cell"
-                style={{ backgroundColor: getCellColor(row, col) }}
-                onClick={() => playMove(col)}
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="mx-auto max-w-lg text-center">
+        <h1 className="mb-2 text-3xl font-bold">Puissance 4</h1>
+        <p className="mb-8 text-gray-700">Entrez vos pseudos, puis démarrez une partie.</p>
+
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+          <div className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <input
+                className="w-1/2 rounded border border-gray-300 px-3 py-2"
+                placeholder="Pseudo Joueur 1 (Rouge)"
+                value={player1Pseudo}
+                onChange={(e) => setPlayer1Pseudo(e.target.value)}
               />
-            ))}
+              <input
+                className="w-1/2 rounded border border-gray-300 px-3 py-2"
+                placeholder="Pseudo Joueur 2 (Jaune)"
+                value={player2Pseudo}
+                onChange={(e) => setPlayer2Pseudo(e.target.value)}
+              />
+            </div>
+
+            {error ? <div className="text-sm text-red-600">{error}</div> : null}
+
+            <button
+              type="button"
+              className="rounded bg-gray-900 px-4 py-2 font-semibold text-white"
+              onClick={onStart}
+            >
+              Démarrer
+            </button>
+
+            <div className="text-sm">
+              <Link className="text-gray-900 underline" to="/history">
+                Voir l’historique
+              </Link>
+            </div>
           </div>
-        ))}
+        </div>
       </div>
-      <button onClick={resetGame} className="reset-btn">Réinitialiser</button>
     </div>
   )
 }

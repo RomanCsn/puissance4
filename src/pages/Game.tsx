@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { createMatch, finishMatch } from '../api/matches'
 
 function Game() {
@@ -21,8 +22,13 @@ function Game() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  const [searchParams] = useSearchParams()
+  const autoStartRef = useRef(false)
+
   const isStarted = matchId !== null
   const isFinished = winner !== null
+
+  const hasPseudosFromHome = Boolean(searchParams.get('p1') && searchParams.get('p2'))
 
   const elapsedMs = useMemo(() => {
     if (!startedAtMs) return 0
@@ -40,6 +46,29 @@ function Game() {
       window.clearInterval(intervalId)
     }
   }, [isFinished, isStarted, startedAtMs])
+
+  useEffect(() => {
+    const p1 = (searchParams.get('p1') ?? '').trim()
+    const p2 = (searchParams.get('p2') ?? '').trim()
+    if (!p1 || !p2) return
+
+    // Pré-remplit depuis l'accueil si l'état est vide.
+    setPlayer1Pseudo((prev) => (prev.trim() ? prev : p1))
+    setPlayer2Pseudo((prev) => (prev.trim() ? prev : p2))
+  }, [searchParams])
+
+  useEffect(() => {
+    const p1 = player1Pseudo.trim()
+    const p2 = player2Pseudo.trim()
+    if (!hasPseudosFromHome) return
+    if (autoStartRef.current) return
+    if (isSaving || isStarted) return
+    if (!p1 || !p2) return
+
+    autoStartRef.current = true
+    void startMatch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasPseudosFromHome, isSaving, isStarted, player1Pseudo, player2Pseudo])
 
   function formatDuration(ms: number) {
     const totalSeconds = Math.floor(ms / 1000)
@@ -206,22 +235,28 @@ function Game() {
         <h1 className="text-3xl font-bold mb-8">Puissance 4</h1>
 
         <div className="mb-6 flex flex-col items-center gap-3">
-          <div className="flex w-full gap-2">
-            <input
-              className="w-1/2 rounded border border-gray-300 px-3 py-2"
-              placeholder="Pseudo Joueur 1 (Rouge)"
-              value={player1Pseudo}
-              onChange={(e) => setPlayer1Pseudo(e.target.value)}
-              disabled={isSaving}
-            />
-            <input
-              className="w-1/2 rounded border border-gray-300 px-3 py-2"
-              placeholder="Pseudo Joueur 2 (Jaune)"
-              value={player2Pseudo}
-              onChange={(e) => setPlayer2Pseudo(e.target.value)}
-              disabled={isSaving}
-            />
-          </div>
+          {hasPseudosFromHome ? (
+            <div className="text-sm text-gray-700">
+              {player1Pseudo.trim() || 'Joueur 1'} (Rouge) vs {player2Pseudo.trim() || 'Joueur 2'} (Jaune)
+            </div>
+          ) : (
+            <div className="flex w-full gap-2">
+              <input
+                className="w-1/2 rounded border border-gray-300 px-3 py-2"
+                placeholder="Pseudo Joueur 1 (Rouge)"
+                value={player1Pseudo}
+                onChange={(e) => setPlayer1Pseudo(e.target.value)}
+                disabled={isSaving}
+              />
+              <input
+                className="w-1/2 rounded border border-gray-300 px-3 py-2"
+                placeholder="Pseudo Joueur 2 (Jaune)"
+                value={player2Pseudo}
+                onChange={(e) => setPlayer2Pseudo(e.target.value)}
+                disabled={isSaving}
+              />
+            </div>
+          )}
 
           <div className="flex gap-2">
             <button
@@ -233,13 +268,21 @@ function Game() {
               {isStarted ? 'Rejouer (nouvelle partie)' : 'Commencer'}
             </button>
 
-            <a
-              href="/history/"
+            <Link
+              to="/history"
               className="rounded border border-gray-300 bg-white px-4 py-2"
               aria-label="Aller à l'historique"
             >
               Historique
-            </a>
+            </Link>
+
+            <Link
+              to="/"
+              className="rounded border border-gray-300 bg-white px-4 py-2"
+              aria-label="Retour à l'accueil"
+            >
+              Accueil
+            </Link>
           </div>
 
           {apiError ? <div className="text-sm text-red-600">{apiError}</div> : null}

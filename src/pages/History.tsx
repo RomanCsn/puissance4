@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getMatches, type MatchRow } from '../api/matches'
 
 function formatDuration(durationMs: number) {
@@ -34,75 +35,78 @@ export default function History() {
         }
     }, [])
 
-    if (loading) return <div>Chargement…</div>
-    if (error) return <div>Erreur: {error}</div>
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-100 p-8">
+                <div className="mx-auto max-w-4xl text-center text-gray-700">Chargement…</div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-100 p-8">
+                <div className="mx-auto max-w-4xl text-center text-red-600">Erreur: {error}</div>
+            </div>
+        )
+    }
+
+    const finished = matches.filter((m) => m.endedAt)
 
     return (
-        <main style={{ padding: '2rem', textAlign: 'center', position: 'relative' }}>
-            {/* Header : titre centré + bouton nouvelle partie top-right */}
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {/* Bouton fixe en haut à droite */}
-                <a
-                    href="/game/"
-                    aria-label="Nouvelle partie"
-                    style={{
-                        position: 'fixed',
-                        top: '1rem',
-                        right: '1rem',
-                        background: '#111827',
-                        color: '#ffffff',
-                        padding: '0.5rem 0.9rem',
-                        borderRadius: 10,
-                        textDecoration: 'none',
-                        fontWeight: 600,
-                        fontSize: 14,
-                        zIndex: 1000,
-                        boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
-                    }}
-                >
-                    Nouvelle partie
-                </a>
-                <h1 style={{ margin: 0 }}>Historique</h1>
-            </div>
+        <div className="min-h-screen bg-gray-100 p-8">
+            <div className="mx-auto max-w-4xl">
+                <div className="mb-6 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold">Historique</h1>
+                        <p className="text-sm text-gray-700">Qui a gagné contre qui, en combien de temps.</p>
+                    </div>
 
-            <p>Page d'historique des parties jouées.</p>
+                    <div className="flex gap-2">
+                        <Link to="/" className="rounded border border-gray-300 bg-white px-4 py-2">
+                            Accueil
+                        </Link>
+                        <Link to="/game" className="rounded bg-gray-900 px-4 py-2 font-semibold text-white">
+                            Nouvelle partie
+                        </Link>
+                    </div>
+                </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginTop: '1rem', justifyItems: 'center' }}>
-                {matches.length === 0 ? (
-                    <p>Aucune partie terminée.</p>
-                ) : (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Joueur 1</th>
-                                <th>Joueur 2</th>
-                                <th>Gagnant</th>
-                                <th>Durée</th>
-                                <th>Coups</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {matches
-                                .filter((m) => m.endedAt)
-                                .map((m) => {
+                <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
+                    {finished.length === 0 ? (
+                        <div className="p-6 text-center text-gray-700">Aucune partie terminée.</div>
+                    ) : (
+                        <table className="min-w-full text-left text-sm">
+                            <thead className="bg-gray-50 text-gray-700">
+                                <tr>
+                                    <th className="px-4 py-3 font-semibold">Date</th>
+                                    <th className="px-4 py-3 font-semibold">Joueur 1</th>
+                                    <th className="px-4 py-3 font-semibold">Joueur 2</th>
+                                    <th className="px-4 py-3 font-semibold">Gagnant</th>
+                                    <th className="px-4 py-3 font-semibold">Durée</th>
+                                    <th className="px-4 py-3 font-semibold">Coups</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {finished.map((m) => {
                                     const date = (m.endedAt ?? m.startedAt).slice(0, 10)
                                     const winner = m.result === 'DRAW' ? 'DRAW' : (m.winner ?? 'DRAW')
                                     return (
-                                        <tr key={m.id}>
-                                            <td>{date}</td>
-                                            <td>{m.player1}</td>
-                                            <td>{m.player2}</td>
-                                            <td>{winner}</td>
-                                            <td>{formatDuration(m.durationMs)}</td>
-                                            <td>{m.movesCount}</td>
+                                        <tr key={m.id} className="border-t">
+                                            <td className="px-4 py-3">{date}</td>
+                                            <td className="px-4 py-3">{m.player1}</td>
+                                            <td className="px-4 py-3">{m.player2}</td>
+                                            <td className="px-4 py-3">{winner}</td>
+                                            <td className="px-4 py-3">{formatDuration(m.durationMs)}</td>
+                                            <td className="px-4 py-3">{m.movesCount}</td>
                                         </tr>
                                     )
                                 })}
-                        </tbody>
-                    </table>
-                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div>
-        </main>
+        </div>
     )
 }
